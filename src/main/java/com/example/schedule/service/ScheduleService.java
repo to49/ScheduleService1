@@ -45,9 +45,6 @@ public class ScheduleService {
     }
     //add subject
     public Schedule addSubject(DayOfWeek dayOfWeek , String subjectName){
-        if (scheduleRepository.existsByDayOfWeekAndSubjectName(dayOfWeek, subjectName)) {
-            throw  new RuntimeException("Этот предмет уже есть в расписании на  "+dayOfWeek.getDisplayName());
-        }
         return scheduleRepository.save(new Schedule(dayOfWeek, subjectName));
 
     };
