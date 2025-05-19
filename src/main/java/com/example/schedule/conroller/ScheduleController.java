@@ -81,9 +81,27 @@ public class ScheduleController {
 
     @PostMapping("/weeks")
     public Week createWeek(
-            @RequestParam int weekNumber,
-            @RequestParam String startDate) {
+            @RequestParam String startDate,
+            @RequestParam(required = false) Integer weekNumber) {
 
-        return weekService.getOrCreateWeek(weekNumber, LocalDate.parse(startDate));
+        LocalDate date = LocalDate.parse(startDate);
+        if (weekNumber != null) {
+            return weekService.getOrCreateWeek(weekNumber, date);
+        }
+        return weekService.createNewWeek(date);
+    }
+
+    @PostMapping("/weeks/generate")
+    public List<Week> generateWeeks(@RequestParam int count) {
+        return weekService.generateNextWeeks(count);
+    }
+
+    @PostMapping("/copy")
+    public String copySchedule(
+            @RequestParam int fromWeek,
+            @RequestParam int toWeek) {
+
+        scheduleService.copySchedule(fromWeek, toWeek);
+        return "Расписание успешно скопировано с недели " + fromWeek + " на неделю " + toWeek;
     }
 }

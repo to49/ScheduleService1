@@ -14,6 +14,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 
+
 @Controller
 @RequestMapping("/schedule")
 public class WebController {
@@ -43,6 +44,12 @@ public class WebController {
         return "schedule";
     }
 
+    @GetMapping("/manage-weeks")
+    public String manageWeeks(Model model) {
+        model.addAttribute("weeks", weekService.getAllWeeks());
+        return "manage-weeks";
+    }
+
     @PostMapping("/add")
     public String addSubject(
             @RequestParam int weekNumber,
@@ -63,5 +70,26 @@ public class WebController {
 
         scheduleService.deleteSubject(id);
         return "redirect:/schedule" + (weekNumber != null ? "?weekNumber=" + weekNumber : "");
+    }
+
+    @PostMapping("/create-week")
+    public String createWeek(@RequestParam String startDate) {
+        weekService.createNewWeek(LocalDate.parse(startDate));
+        return "redirect:/schedule/manage-weeks";
+    }
+
+    @PostMapping("/generate-weeks")
+    public String generateWeeks(@RequestParam int count) {
+        weekService.generateNextWeeks(count);
+        return "redirect:/schedule/manage-weeks";
+    }
+
+    @PostMapping("/copy-schedule")
+    public String copySchedule(
+            @RequestParam int fromWeek,
+            @RequestParam int toWeek) {
+
+        scheduleService.copySchedule(fromWeek, toWeek);
+        return "redirect:/schedule?weekNumber=" + toWeek;
     }
 }

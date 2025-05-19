@@ -9,8 +9,9 @@ import java.time.LocalTime;
 import java.util.List;
 import java.time.LocalDate;
 
-public interface ScheduleRepository extends JpaRepository<Schedule,Long> {
+public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
     List<Schedule> findByWeekAndDayOfWeekOrderByTimeAsc(Week week, DayOfWeek dayOfWeek);
     List<Schedule> findByWeekOrderByDayOfWeekAscTimeAsc(Week week);
     boolean existsByWeekAndDayOfWeekAndTime(Week week, DayOfWeek dayOfWeek, LocalTime time);
+    List<Schedule> findByWeek(Week week);
 }

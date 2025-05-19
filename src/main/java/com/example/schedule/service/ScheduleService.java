@@ -5,6 +5,7 @@ import com.example.schedule.repository.ScheduleRepository;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalTime;
 import java.util.Arrays;
@@ -37,16 +38,10 @@ public class ScheduleService {
         }
     }
 
+    @Transactional
     public Schedule addSubject(Week week, DayOfWeek dayOfWeek, String subjectName, LocalTime time) {
-        if (time.isBefore(LocalTime.of(8, 0)) ){
-            throw new IllegalArgumentException("Занятия начинаются не раньше 8:00");
-        }
-        if (time.isAfter(LocalTime.of(20, 0))) {
-            throw new IllegalArgumentException("Занятия заканчиваются не позже 20:00");
-        }
-        if (scheduleRepository.existsByWeekAndDayOfWeekAndTime(week, dayOfWeek, time)) {
-            throw new IllegalArgumentException("На это время уже запланировано занятие");
-        }
+        validateTime(time);
+        checkTimeSlotAvailability(week, dayOfWeek, time);
 
         return scheduleRepository.save(new Schedule(week, dayOfWeek, subjectName, time));
     }
@@ -55,7 +50,37 @@ public class ScheduleService {
         return scheduleRepository.findByWeekOrderByDayOfWeekAscTimeAsc(week);
     }
 
+    @Transactional
     public void deleteSubject(Long id) {
         scheduleRepository.deleteById(id);
+    }
+
+    @Transactional
+    public void copySchedule(int fromWeekNumber, int toWeekNumber) {
+        Week fromWeek = weekService.getWeekByNumber(fromWeekNumber);
+        Week toWeek = weekService.getWeekByNumber(toWeekNumber);
+
+        List<Schedule> schedules = scheduleRepository.findByWeek(fromWeek);
+
+        schedules.forEach(schedule -> {
+            scheduleRepository.save(new Schedule(
+                    toWeek,
+                    schedule.getDayOfWeek(),
+                    schedule.getSubjectName(),
+                    schedule.getTime()
+            ));
+        });
+    }
+
+    private void validateTime(LocalTime time) {
+        if (time.isBefore(LocalTime.of(8, 0)) || time.isAfter(LocalTime.of(20, 0))) {
+            throw new IllegalArgumentException("Время должно быть между 08:00 и 20:00");
+        }
+    }
+
+    private void checkTimeSlotAvailability(Week week, DayOfWeek dayOfWeek, LocalTime time) {
+        if (scheduleRepository.existsByWeekAndDayOfWeekAndTime(week, dayOfWeek, time)) {
+            throw new IllegalArgumentException("На это время уже запланировано занятие");
+        }
     }
 }

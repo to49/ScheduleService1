@@ -4,24 +4,39 @@
     <meta charset="UTF-8">
     <title>Расписание</title>
     <style>
-        table { border-collapse: collapse; width: 100%; }
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .week-nav { margin-bottom: 20px; padding: 10px; background: #f5f5f5; }
+        .week-selector { display: inline-block; margin-right: 20px; }
+        table { border-collapse: collapse; width: 100%; margin-top: 20px; }
         th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        th { background-color: #f2f2f2; }
-        .week-selector { margin-bottom: 20px; }
+        th { background-color: #4CAF50; color: white; }
+        .subject-item { margin: 5px 0; }
+        .delete-btn { color: red; cursor: pointer; margin-left: 10px; }
+        .add-form { margin-top: 10px; }
     </style>
 </head>
 <body>
-<div class="week-selector">
-    <form th:action="@{/schedule}" method="get">
-        <select name="weekNumber">
-            <option th:each="week : ${weeks}"
-                    th:value="${week.weekNumber}"
-                    th:text="'Неделя ' + ${week.weekNumber} + ' (' + ${#temporals.format(week.startDate, 'dd.MM')} + '-' + ${#temporals.format(week.endDate, 'dd.MM')} + ')'"
-                    th:selected="${week.weekNumber == currentWeek.weekNumber}">
-            </option>
-        </select>
-        <button type="submit">Показать</button>
-    </form>
+<div class="week-nav">
+    <a th:href="@{/schedule/manage-weeks}" class="btn">Управление неделями</a>
+
+    <div class="week-selector">
+        <form th:action="@{/schedule}" method="get">
+            <select name="weekNumber">
+                <option value="">Текущая неделя</option>
+                <option th:each="week : ${weeks}"
+                        th:value="${week.weekNumber}"
+                        th:text="'Неделя ' + ${week.weekNumber} + ' (' + ${#temporals.format(week.startDate, 'dd.MM')} + '-' + ${#temporals.format(week.endDate, 'dd.MM')} + ')'"
+                        th:selected="${week.weekNumber == currentWeek.weekNumber}">
+                </option>
+            </select>
+            <button type="submit">Показать</button>
+        </form>
+    </div>
+
+    <div th:if="${currentWeek}" class="current-week">
+        <strong>Текущая неделя:</strong>
+        <span th:text="${#temporals.format(currentWeek.startDate, 'dd.MM.yyyy')} + ' - ' + ${#temporals.format(currentWeek.endDate, 'dd.MM.yyyy')}"></span>
+    </div>
 </div>
 
 <table>
@@ -36,30 +51,46 @@
     <tr th:each="day : ${daysOfWeek}">
         <td th:text="${day.displayName}"></td>
         <td>
-            <ul th:if="${not scheduleMap.isEmpty()}">
-                <li th:each="item : ${scheduleMap}"
-                    th:if="${item.dayOfWeek == day}">
-                    <span th:text="${#temporals.format(item.time, 'HH:mm')} + ' - ' + ${item.subjectName}"></span>
-                    <form th:action="@{/schedule/delete/{id}(id=${item.id})}"
-                          method="post"
-                          style="display: inline;">
-                        <input type="hidden" name="weekNumber" th:value="${currentWeek.weekNumber}">
-                        <button type="submit">❌</button>
-                    </form>
-                </li>
-            </ul>
+            <div th:each="item : ${scheduleMap}"
+                 th:if="${item.dayOfWeek == day}"
+                 class="subject-item">
+                <span th:text="${#temporals.format(item.time, 'HH:mm')} + ' - ' + ${item.subjectName}"></span>
+                <form th:action="@{/schedule/delete/{id}(id=${item.id})}"
+                      method="post"
+                      style="display: inline;">
+                    <input type="hidden" name="weekNumber" th:value="${currentWeek.weekNumber}">
+                    <button type="submit" class="delete-btn">×</button>
+                </form>
+            </div>
         </td>
         <td>
-            <form th:action="@{/schedule/add}" method="post">
+            <form th:action="@{/schedule/add}" method="post" class="add-form">
                 <input type="hidden" name="weekNumber" th:value="${currentWeek.weekNumber}">
                 <input type="hidden" name="dayOfWeek" th:value="${day.name()}">
                 <input type="text" name="subjectName" placeholder="Название" required>
                 <input type="time" name="time" min="08:00" max="20:00" required>
-                <button type="submit">+</button>
+                <button type="submit">Добавить</button>
             </form>
         </td>
     </tr>
     </tbody>
 </table>
+
+<div th:if="${currentWeek}" class="copy-section">
+    <h3>Копировать расписание</h3>
+    <form th:action="@{/schedule/copy-schedule}" method="post">
+        <input type="hidden" name="fromWeek" th:value="${currentWeek.weekNumber}">
+        <label>На неделю:
+            <select name="toWeek" required>
+                <option th:each="week : ${weeks}"
+                        th:if="${week.weekNumber != currentWeek.weekNumber}"
+                        th:value="${week.weekNumber}"
+                        th:text="'Неделя ' + ${week.weekNumber} + ' (' + ${#temporals.format(week.startDate, 'dd.MM')} + '-' + ${#temporals.format(week.endDate, 'dd.MM')} + ')'">
+                </option>
+            </select>
+        </label>
+        <button type="submit">Копировать</button>
+    </form>
+</div>
 </body>
 </html>
