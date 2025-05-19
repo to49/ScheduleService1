@@ -1,79 +1,61 @@
 package com.example.schedule.service;
 
-
-import com.example.schedule.model.DayOfWeek;
-import com.example.schedule.model.Schedule;
+import com.example.schedule.model.*;
 import com.example.schedule.repository.ScheduleRepository;
 import jakarta.annotation.PostConstruct;
-import jakarta.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 @Service
-@Transactional
 public class ScheduleService {
-    private final ScheduleRepository scheduleRepository;
+    @Autowired
+    private ScheduleRepository scheduleRepository;
 
-    public ScheduleService(ScheduleRepository scheduleRepository){
-        this.scheduleRepository=scheduleRepository;
-    }
-    //инициализация начальных данных
+    @Autowired
+    private WeekService weekService;
+
     @PostConstruct
-    public void init(){
-        if (scheduleRepository.count()==0){
-            Arrays.stream(DayOfWeek.values())
-                    .forEach(day ->{
-                        if (day!=DayOfWeek.SATURDAY && day!=DayOfWeek.SUNDAY){
-                            scheduleRepository.save(new Schedule(day,"Матан",LocalTime.of(9,0)));
-                            scheduleRepository.save(new Schedule(day,"Колебания волн каждый день",LocalTime.of(11,0)));
-                        }
-                    });
+    public void init() {
+        if (scheduleRepository.count() == 0) {
+            Week currentWeek = weekService.getCurrentWeek();
 
-            System.out.println("инициализированы тестовые данные расписания");
+            Arrays.stream(DayOfWeek.values())
+                    .filter(day -> !Set.of(DayOfWeek.SATURDAY, DayOfWeek.SUNDAY).contains(day))
+                    .forEach(day -> {
+                        scheduleRepository.save(new Schedule(
+                                currentWeek, day, "Математика", LocalTime.of(9, 0)
+                        ));
+                        scheduleRepository.save(new Schedule(
+                                currentWeek, day, "Физика", LocalTime.of(11, 0)
+                        ));
+                    });
         }
     }
 
-    //получить все записи
-    public List<Schedule> getAllSchedules(){
-        return scheduleRepository.findAllByOrderByDayOfWeekAscTimeAsc();
-    }
-    // Предметы по дню недели
-    public List<Schedule> getSchedulesByDay(DayOfWeek dayOfWeek){
-        return scheduleRepository.findByDayOfWeekOrderByTimeAsc(dayOfWeek);
-    }
-    //add subject
-    public Schedule addSubject(DayOfWeek dayOfWeek , String subjectName, LocalTime time){
-
-        if (time.isBefore(LocalTime.of(8, 0))) {
-            throw new IllegalArgumentException("Время слишком раннее (минимум 8:00)");
+    public Schedule addSubject(Week week, DayOfWeek dayOfWeek, String subjectName, LocalTime time) {
+        if (time.isBefore(LocalTime.of(8, 0)) ){
+            throw new IllegalArgumentException("Занятия начинаются не раньше 8:00");
         }
         if (time.isAfter(LocalTime.of(20, 0))) {
-            throw new IllegalArgumentException("Время слишком позднее (максимум 20:00)");
+            throw new IllegalArgumentException("Занятия заканчиваются не позже 20:00");
         }
-        List<Schedule> existingSubjects = scheduleRepository.findByDayOfWeekOrderByTimeAsc(dayOfWeek);
-        for (Schedule existing : existingSubjects) {
-            long diffMinutes = Math.abs(time.toSecondOfDay() - existing.getTime().toSecondOfDay()) / 60;
-            if (diffMinutes < 60) {
-                throw new IllegalArgumentException(
-                        "Интервал между предметами должен быть ≥ 1 часа! " +
-                                "Конфликт с предметом: " + existing.getSubjectName() + " (" + existing.getTime() + ")"
-                );
-            }
+        if (scheduleRepository.existsByWeekAndDayOfWeekAndTime(week, dayOfWeek, time)) {
+            throw new IllegalArgumentException("На это время уже запланировано занятие");
         }
 
-        //тут был блокировщик
-        return scheduleRepository.save(new Schedule(dayOfWeek, subjectName,time));
+        return scheduleRepository.save(new Schedule(week, dayOfWeek, subjectName, time));
+    }
 
-    };
+    public List<Schedule> getScheduleForWeek(Week week) {
+        return scheduleRepository.findByWeekOrderByDayOfWeekAscTimeAsc(week);
+    }
 
-
-    public void deleteSubject(long id){
-        if (!scheduleRepository.existsById(id)) {
-            throw new RuntimeException("Subject not found with id: " + id);
-        }
+    public void deleteSubject(Long id) {
         scheduleRepository.deleteById(id);
     }
 }

@@ -9,6 +9,9 @@ public class Schedule {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
+    @ManyToOne
+    @JoinColumn(name = "week_id", nullable = false)
+    private Week week;
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private DayOfWeek dayOfWeek;
@@ -20,10 +23,19 @@ public class Schedule {
     private String subjectName;
 
     public Schedule(){}
-    public Schedule(DayOfWeek dayOfWeek , String subjectName,LocalTime time) {
-        this.dayOfWeek=dayOfWeek;
-        this.subjectName=subjectName;
+    public Schedule(Week week, DayOfWeek dayOfWeek, String subjectName, LocalTime time) {
+        this.week = week;
+        this.dayOfWeek = dayOfWeek;
+        this.subjectName = subjectName;
         this.time = time;
+    }
+
+    public Week getWeek() {
+        return week;
+    }
+
+    public void setWeek(Week week) {
+        this.week = week;
     }
 
     public LocalTime getTime() {

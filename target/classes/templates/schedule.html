@@ -2,61 +2,64 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Расписание предметов</title>
+    <title>Расписание</title>
     <style>
-        table {
-            border-collapse: collapse;
-            width: 100%;
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-        }
-        th {
-            background-color: #f2f2f2;
-        }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .week-selector { margin-bottom: 20px; }
     </style>
 </head>
 <body>
-<h1>Расписание предметов</h1>
-
-<div class="container">
-    <table>
-        <thead>
-        <tr>
-            <th>День недели</th>
-            <th>Предметы</th>
-            <th>Добавить предмет</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr th:each="day : ${daysOfWeek}">
-            <td th:text="${day.displayName}"></td>
-            <td>
-                <!-- Упрощенная фильтрация -->
-                <ul th:if="${scheduleMap != null}">
-                    <li th:each="item : ${scheduleMap}"
-                        th:if="${item.dayOfWeek == day}">
-                        <span th:text="${#temporals.format(item.time, 'HH:mm')} + ' - ' + ${item.subjectName}"></span>
-                        <form th:action="@{/schedule/delete/{id}(id=${item.id})}"
-                              method="post" style="display: inline;">
-                            <button type="submit">×</button>
-                        </form>
-                    </li>
-                </ul>
-            </td>
-            <td>
-                <form th:action="@{/schedule/add}" method="post">
-                    <input type="hidden" name="dayOfWeek" th:value="${day.name()}">
-                    <input type="text" name="subjectName" required>
-                    <input type="time" name="time" required>  <!-- Новое поле -->
-                    <button type="submit">+</button>
-                </form>
-            </td>
-        </tr>
-        </tbody>
-    </table>
+<div class="week-selector">
+    <form th:action="@{/schedule}" method="get">
+        <select name="weekNumber">
+            <option th:each="week : ${weeks}"
+                    th:value="${week.weekNumber}"
+                    th:text="'Неделя ' + ${week.weekNumber} + ' (' + ${#temporals.format(week.startDate, 'dd.MM')} + '-' + ${#temporals.format(week.endDate, 'dd.MM')} + ')'"
+                    th:selected="${week.weekNumber == currentWeek.weekNumber}">
+            </option>
+        </select>
+        <button type="submit">Показать</button>
+    </form>
 </div>
+
+<table>
+    <thead>
+    <tr>
+        <th>День недели</th>
+        <th>Занятия</th>
+        <th>Добавить занятие</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="day : ${daysOfWeek}">
+        <td th:text="${day.displayName}"></td>
+        <td>
+            <ul th:if="${not scheduleMap.isEmpty()}">
+                <li th:each="item : ${scheduleMap}"
+                    th:if="${item.dayOfWeek == day}">
+                    <span th:text="${#temporals.format(item.time, 'HH:mm')} + ' - ' + ${item.subjectName}"></span>
+                    <form th:action="@{/schedule/delete/{id}(id=${item.id})}"
+                          method="post"
+                          style="display: inline;">
+                        <input type="hidden" name="weekNumber" th:value="${currentWeek.weekNumber}">
+                        <button type="submit">❌</button>
+                    </form>
+                </li>
+            </ul>
+        </td>
+        <td>
+            <form th:action="@{/schedule/add}" method="post">
+                <input type="hidden" name="weekNumber" th:value="${currentWeek.weekNumber}">
+                <input type="hidden" name="dayOfWeek" th:value="${day.name()}">
+                <input type="text" name="subjectName" placeholder="Название" required>
+                <input type="time" name="time" min="08:00" max="20:00" required>
+                <button type="submit">+</button>
+            </form>
+        </td>
+    </tr>
+    </tbody>
+</table>
 </body>
 </html>
