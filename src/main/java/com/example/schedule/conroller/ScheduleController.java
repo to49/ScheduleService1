@@ -3,8 +3,10 @@ import com.example.schedule.model.DayOfWeek;
 import com.example.schedule.model.Schedule;
 import com.example.schedule.service.ScheduleService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalTime;
 import java.util.List;
 
 
@@ -28,9 +30,11 @@ public class ScheduleController {
     @PostMapping
     public Schedule addSubject(
             @RequestParam DayOfWeek dayOfWeek,
-            @RequestParam String subjectName){
-      return  scheduleService.addSubject(dayOfWeek,subjectName);
-    };
+            @RequestParam String subjectName,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.TIME) LocalTime time)
+    {
+        return  scheduleService.addSubject(dayOfWeek,subjectName,time);
+    }
 
     @DeleteMapping("/{id}")
     public void deleteSubject(@PathVariable Long id){

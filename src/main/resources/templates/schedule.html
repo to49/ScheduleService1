@@ -38,7 +38,7 @@
                 <ul th:if="${scheduleMap != null}">
                     <li th:each="item : ${scheduleMap}"
                         th:if="${item.dayOfWeek == day}">
-                        <span th:text="${item.subjectName}"></span>
+                        <span th:text="${#temporals.format(item.time, 'HH:mm')} + ' - ' + ${item.subjectName}"></span>
                         <form th:action="@{/schedule/delete/{id}(id=${item.id})}"
                               method="post" style="display: inline;">
                             <button type="submit">×</button>
@@ -50,6 +50,7 @@
                 <form th:action="@{/schedule/add}" method="post">
                     <input type="hidden" name="dayOfWeek" th:value="${day.name()}">
                     <input type="text" name="subjectName" required>
+                    <input type="time" name="time" required>  <!-- Новое поле -->
                     <button type="submit">+</button>
                 </form>
             </td>

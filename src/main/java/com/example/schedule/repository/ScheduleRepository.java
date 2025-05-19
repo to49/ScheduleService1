@@ -8,5 +8,7 @@ import java.util.List;
 public interface ScheduleRepository extends JpaRepository<Schedule,Long> {
     List<Schedule> findByDayOfWeekOrderByIdAsc(DayOfWeek dayOfWeek);
     List<Schedule> findAllByOrderByDayOfWeekAsc();
+    List<Schedule> findByDayOfWeekOrderByTimeAsc(DayOfWeek dayOfWeek);
+    List<Schedule> findAllByOrderByDayOfWeekAscTimeAsc();
     boolean existsByDayOfWeekAndSubjectName(DayOfWeek dayOfWeek, String subjectName);
 }
