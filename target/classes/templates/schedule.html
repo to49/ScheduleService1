@@ -1,56 +1,41 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Расписание предметов</title>
-    <style>
-        table {
-            border-collapse: collapse;
-            width: 100%;
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-        }
-        th {
-            background-color: #f2f2f2;
-        }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Расписание занятий</title>
+    <link rel="stylesheet" th:href="@{/style.css}">
 </head>
 <body>
-<h1>Расписание предметов</h1>
-
 <div class="container">
+    <h1>Расписание занятий</h1>
+
     <table>
         <thead>
         <tr>
-            <th>День недели</th>
-            <th>Предметы</th>
-            <th>Добавить предмет</th>
+            <th th:each="day : ${T(com.example.schedule.model.DayOfWeek).values()}"
+                th:text="${day.displayName}"
+                class="day-header"></th>
         </tr>
         </thead>
         <tbody>
-        <tr th:each="day : ${daysOfWeek}">
-            <td th:text="${day.displayName}"></td>
-            <td>
-                <!-- Упрощенная фильтрация -->
-                <ul th:if="${scheduleMap != null}">
-                    <li th:each="item : ${scheduleMap}"
-                        th:if="${item.dayOfWeek == day}">
-                        <span th:text="${item.subjectName}"></span>
+        <tr th:each="time,iter : ${1}">                  <!-- ПОМЕНЯТЬ ПОТОМ ДЛЯ НАСТРОЙКИ ВРЕМЕНИ!!!! -->
+            <td th:each="day : ${T(com.example.schedule.model.DayOfWeek).values()}">
+                <div th:each="item : ${scheduleMap}"
+                     th:if="${item.dayOfWeek == day}">
+                    <div class="subject">
+                        <span class="subject-name" th:text="${item.subjectName}"></span>
                         <form th:action="@{/schedule/delete/{id}(id=${item.id})}"
-                              method="post" style="display: inline;">
-                            <button type="submit">×</button>
+                              method="post"
+                              style="display: inline;">
+                            <button type="submit" class="delete-btn">×</button>
                         </form>
-                    </li>
-                </ul>
-            </td>
-            <td>
-                <form th:action="@{/schedule/add}" method="post">
-                    <input type="hidden" name="dayOfWeek" th:value="${day.name()}">
-                    <input type="text" name="subjectName" required>
-                    <button type="submit">+</button>
+                    </div>
+                </div>
+                <form class="add-form" th:action="@{/schedule/add}" method="post">
+                    <input type="hidden" name="dayOfWeek" th:value="${day}">
+                    <input type="text" name="subjectName" placeholder="Название предмета" required>
+                    <button type="submit" class="add-btn">+</button>
                 </form>
             </td>
         </tr>

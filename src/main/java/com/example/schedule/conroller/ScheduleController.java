@@ -37,9 +37,4 @@ public class ScheduleController {
         scheduleService.deleteSubject(id);
     }
 
-
-
-
-
-
 }
