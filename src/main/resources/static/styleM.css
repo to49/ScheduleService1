@@ -14,7 +14,6 @@ body {
     border-radius: 10px;
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
     padding: 30px;
-    overflow-x: hidden;
 }
 
 h1 {
@@ -24,7 +23,7 @@ h1 {
     font-weight: 600;
 }
 
-/* === Таблица === */
+/* === Таблица расписания === */
 table {
     width: 100%;
     border-collapse: separate;
@@ -41,7 +40,6 @@ th {
     border-radius: 5px;
     font-weight: 500;
     word-wrap: break-word;
-    overflow-wrap: break-word;
 }
 
 td {
@@ -53,8 +51,6 @@ td {
     position: relative;
     vertical-align: top;
     word-wrap: break-word;
-    overflow-wrap: break-word;
-    max-width: 160px;
 }
 
 td:hover {
@@ -63,30 +59,29 @@ td:hover {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-/* === Элементы расписания === */
+/* === Элемент предмета === */
 .subject {
     background-color: white;
     border-radius: 5px;
-    padding: 8px 10px;
+    padding: 10px;
     margin-bottom: 5px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
     display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 4px;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+    gap: 10px;
 }
 
 .subject-time {
     font-weight: 500;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    font-size: 14px;
-    color: #555;
-    white-space: nowrap;
+    color: #2980b9;
 }
 
 .subject-name {
     font-weight: 500;
-    font-size: 15px;
+    flex-grow: 1;
+    text-align: left;
 }
 
 .delete-btn {
@@ -96,15 +91,12 @@ td:hover {
     border-radius: 50%;
     width: 24px;
     height: 24px;
-    font-size: 12px;
+    font-size: 14px;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     transition: all 0.2s;
-    align-self: flex-end;
-    flex-shrink: 0;
-    margin-top: 5px;
 }
 
 .delete-btn:hover {
@@ -112,17 +104,22 @@ td:hover {
     transform: scale(1.1);
 }
 
-/* === Добавление нового предмета === */
+/* === Форма добавления предмета === */
 .add-form {
     margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 }
 
-.add-form input {
-    width: 70%;
+.add-form input[type="text"],
+.add-form input[type="time"] {
     padding: 8px 12px;
-    border: 1px solid #ddd;
+    border: 1px solid #ccc;
     border-radius: 4px;
-    margin-right: 5px;
+    font-family: inherit;
+    font-size: 14px;
+    width: 100%;
 }
 
 .add-btn {
@@ -132,6 +129,8 @@ td:hover {
     border-radius: 4px;
     padding: 8px 12px;
     cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
     transition: background-color 0.2s;
 }
 
@@ -139,7 +138,7 @@ td:hover {
     background-color: #27ae60;
 }
 
-/* === Заголовки дней недели === */
+/* === Заголовки дней === */
 .day-header {
     position: relative;
 }
@@ -156,102 +155,145 @@ td:hover {
     border-radius: 3px;
 }
 
-/* === Навигация по неделям === */
-.week-nav {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 15px;
-    margin-bottom: 20px;
+/* === Секция выбора недели и копирования === */
+.week-nav,
+.copy-section {
+    margin-top: 30px;
+    padding: 20px;
+    background: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
 }
 
-.week-nav .btn {
+.week-nav form,
+.copy-section form {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.week-selector select,
+.copy-section select {
+    padding: 8px 12px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    font-family: inherit;
+    font-size: 14px;
+}
+
+button[type="submit"] {
     background-color: #3498db;
     color: white;
     border: none;
-    padding: 10px 16px;
+    padding: 8px 16px;
     border-radius: 6px;
     cursor: pointer;
-    text-decoration: none;
     font-weight: 500;
     transition: background-color 0.2s;
 }
 
-.week-nav .btn:hover {
+button[type="submit"]:hover {
     background-color: #2980b9;
-}
-
-.week-selector form {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.week-selector select {
-    padding: 8px 12px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    font-family: inherit;
-}
-
-.week-selector button {
-    background-color: #2ecc71;
-    color: white;
-    border: none;
-    padding: 8px 14px;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
-
-.week-selector button:hover {
-    background-color: #27ae60;
 }
 
 .current-week {
-    font-size: 14px;
-    color: #555;
+    margin-top: 10px;
+    font-weight: 500;
 }
 
-/* === Копирование расписания === */
-.copy-section {
-    margin-top: 40px;
-    padding-top: 20px;
-    border-top: 1px solid #eee;
+/* === Стили для страницы управления неделями === */
+.section {
+    margin-top: 30px;
+    background: #ffffff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
 
-.copy-section h3 {
-    margin-bottom: 10px;
-    font-weight: 600;
-    font-size: 18px;
+.section h2 {
     color: #2c3e50;
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 15px;
 }
 
-.copy-section form {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex-wrap: wrap;
+form label {
+    font-weight: 500;
+    color: #333;
 }
 
-.copy-section select {
+input[type="date"],
+input[type="number"] {
     padding: 8px 12px;
     border: 1px solid #ccc;
     border-radius: 4px;
     font-family: inherit;
+    font-size: 14px;
 }
 
-.copy-section button {
+/* === Таблица управления неделями === */
+table thead tr {
     background-color: #3498db;
     color: white;
-    border: none;
-    padding: 8px 14px;
-    border-radius: 4px;
-    cursor: pointer;
+}
+
+table th,
+table td {
+    padding: 12px 15px;
+    text-align: center;
+    word-wrap: break-word;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+a.btn {
+    background-color: #3498db;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
     transition: background-color 0.2s;
 }
 
-.copy-section button:hover {
+a.btn:hover {
     background-color: #2980b9;
+}
+
+/* === Медиа === */
+@media (max-width: 768px) {
+    table {
+        font-size: 13px;
+    }
+
+    .subject {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .add-form {
+        flex-direction: column;
+    }
+
+    .week-nav form,
+    .copy-section form {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    input[type="text"],
+    input[type="time"],
+    input[type="date"],
+    input[type="number"],
+    select {
+        width: 100%;
+    }
+
+    button,
+    .add-btn,
+    a.btn {
+        width: 100%;
+    }
 }

@@ -10,37 +10,81 @@
 <div class="container">
     <h1>Расписание занятий</h1>
 
+    <div class="week-nav">
+        <a th:href="@{/schedule/manage-weeks}" class="btn">Управление неделями</a>
+
+        <div class="week-selector">
+            <form th:action="@{/schedule}" method="get">
+                <select name="weekNumber">
+                    <option value="">Текущая неделя</option>
+                    <option th:each="week : ${weeks}"
+                            th:value="${week.weekNumber}"
+                            th:text="'Неделя ' + ${week.weekNumber} + ' (' + ${#temporals.format(week.startDate, 'dd.MM')} + '-' + ${#temporals.format(week.endDate, 'dd.MM')} + ')'"
+                            th:selected="${week.weekNumber == currentWeek.weekNumber}">
+                    </option>
+                </select>
+                <button type="submit">Показать</button>
+            </form>
+        </div>
+
+        <div th:if="${currentWeek}" class="current-week">
+            <strong>Текущая неделя:</strong>
+            <span th:text="${#temporals.format(currentWeek.startDate, 'dd.MM.yyyy')} + ' - ' + ${#temporals.format(currentWeek.endDate, 'dd.MM.yyyy')}"></span>
+        </div>
+    </div>
+
     <table>
         <thead>
         <tr>
-            <th th:each="day : ${T(com.example.schedule.model.DayOfWeek).values()}"
+            <th th:each="day : ${daysOfWeek}"
                 th:text="${day.displayName}"
                 class="day-header"></th>
         </tr>
         </thead>
         <tbody>
-        <tr th:each="time,iter : ${1}">                  <!-- ПОМЕНЯТЬ ПОТОМ ДЛЯ НАСТРОЙКИ ВРЕМЕНИ!!!! -->
-            <td th:each="day : ${T(com.example.schedule.model.DayOfWeek).values()}">
+        <tr>
+            <td th:each="day : ${daysOfWeek}">
                 <div th:each="item : ${scheduleMap}"
                      th:if="${item.dayOfWeek == day}">
                     <div class="subject">
+                        <span class="subject-time" th:text="${#temporals.format(item.time, 'HH:mm')}"></span>
                         <span class="subject-name" th:text="${item.subjectName}"></span>
                         <form th:action="@{/schedule/delete/{id}(id=${item.id})}"
                               method="post"
                               style="display: inline;">
+                            <input type="hidden" name="weekNumber" th:value="${currentWeek.weekNumber}">
                             <button type="submit" class="delete-btn">×</button>
                         </form>
                     </div>
                 </div>
                 <form class="add-form" th:action="@{/schedule/add}" method="post">
+                    <input type="hidden" name="weekNumber" th:value="${currentWeek.weekNumber}">
                     <input type="hidden" name="dayOfWeek" th:value="${day}">
                     <input type="text" name="subjectName" placeholder="Название предмета" required>
+                    <input type="time" name="time" min="08:00" max="20:00" required>
                     <button type="submit" class="add-btn">+</button>
                 </form>
             </td>
         </tr>
         </tbody>
     </table>
+
+    <div th:if="${currentWeek}" class="copy-section">
+        <h3>Копировать расписание</h3>
+        <form th:action="@{/schedule/copy-schedule}" method="post">
+            <input type="hidden" name="fromWeek" th:value="${currentWeek.weekNumber}">
+            <label>На неделю:
+                <select name="toWeek" required>
+                    <option th:each="week : ${weeks}"
+                            th:if="${week.weekNumber != currentWeek.weekNumber}"
+                            th:value="${week.weekNumber}"
+                            th:text="'Неделя ' + ${week.weekNumber} + ' (' + ${#temporals.format(week.startDate, 'dd.MM')} + '-' + ${#temporals.format(week.endDate, 'dd.MM')} + ')'">
+                    </option>
+                </select>
+            </label>
+            <button type="submit">Копировать</button>
+        </form>
+    </div>
 </div>
 </body>
 </html>
